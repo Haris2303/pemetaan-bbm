@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta
+      name="viewport"
+      content="initial-scale=1,user-scalable=no,maximum-scale=1,width=device-width"
+    />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+
+    <style>
+      .chart-container {
+        position: relative;
+        height: 300px;
+      }
+      .info {
+        padding: 6px 8px;
+        background: white;
+        background: rgba(255, 255, 255, 0.8);
+        box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+        border-radius: 5px;
+      }
+      .info h4 {
+        margin: 0 0 5px;
+        color: #777;
+      }
+    </style>
+
+    <link rel="stylesheet" href="./resources/ol.css" />
+    <link rel="stylesheet" href="resources/fontawesome-all.min.css" />
+    <link rel="stylesheet" href="./resources/ol-layerswitcher.css" />
+    <link rel="stylesheet" href="./resources/qgis2web.css" />
+    <style>
+      html,
+      body {
+        background-color: #ffffff;
+      }
+      .ol-control > * {
+        background-color: #f8f8f8 !important;
+        color: #444444 !important;
+        border-radius: 0px;
+      }
+      .ol-attribution a,
+      .gcd-gl-input::placeholder,
+      .search-layer-input-search::placeholder {
+        color: #444444 !important;
+      }
+      .search-layer-input-search {
+        background-color: #f8f8f8 !important;
+      }
+      .ol-control > *:focus,
+      .ol-control > *:hover {
+        background-color: rgba(248, 248, 248, 0.7) !important;
+      }
+      .ol-control {
+        background-color: rgba(255, 255, 255, 0.4) !important;
+        padding: 2px !important;
+      }
+    </style>
+
+    <style>
+      #map {
+        height: 100vh;
+        width: 100%;
+      }
+    </style>
+
+    <style>
+      .layer-switcher ul > li {
+        background-color: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        padding: 6px 10px;
+        margin-bottom: 6px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        transition: background-color 0.2s ease;
+        list-style-type: none;
+      }
+
+      .layer-switcher ul > li:hover {
+        background-color: #f0f9ff;
+      }
+
+      .layer-switcher input[type="checkbox"] {
+        margin-right: 6px;
+        transform: scale(1.1);
+        accent-color: #2563eb;
+      }
+
+      .layer-switcher label {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-weight: 500;
+        color: #1f2937;
+        width: 100%;
+        cursor: pointer;
+      }
+    </style>
+
+    <title>SIG SPBU dan Pertashop</title>
+  </head>
+  <body class="bg-gray-50">
+    <!-- Header Section -->
+    <header class="bg-blue-800 text-white shadow-lg">
+      <div class="container mx-auto px-4 py-6">
+        <div class="flex flex-col md:flex-row justify-between items-center">
+          <div class="flex items-center mb-4 md:mb-0">
+            <i class="fas fa-gas-pump text-3xl mr-3"></i>
+            <div>
+              <h1 class="text-2xl font-bold">SIG SPBU & PERTASHOP</h1>
+              <p class="text-blue-200">Kota Sorong, Papua Barat Daya</p>
+            </div>
+          </div>
+          <nav class="flex space-x-4">
+            <a href="#peta" class="hover:text-blue-200 transition">Peta</a>
+            <a href="#statistik" class="hover:text-blue-200 transition"
+              >Statistik</a
+            >
+            <a href="#jarak" class="hover:text-blue-200 transition">Jarak</a>
+            <a href="#tentang" class="hover:text-blue-200 transition"
+              >Tentang</a
+            >
+          </nav>
+        </div>
+      </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section
+      id="heroSlider"
+      class="relative text-white py-16 bg-cover bg-center transition-all duration-1000"
+    >
+      <!-- Overlay gelap -->
+      <div class="absolute inset-0 bg-black/60 z-0"></div>
+
+      <!-- Konten hero -->
+      <div class="relative z-10 container mx-auto px-4 text-center">
+        <h2 class="text-4xl font-bold mb-4">
+          Pemetaan Distribusi SPBU & Pertashop
+        </h2>
+        <p class="text-xl mb-8 max-w-3xl mx-auto">
+          Sistem Informasi Geografis untuk memantau distribusi dan status
+          operasional stasiun pengisian bahan bakar di Kota Sorong
+        </p>
+        <a
+          href="#peta"
+          class="bg-white text-blue-800 px-6 py-3 rounded-lg font-semibold hover:bg-blue-100 transition inline-block"
+          >Lihat Peta</a
+        >
+      </div>
+    </section>
+
+    <!-- Main content -->
+    <main class="container mx-auto px-4 py-12">
+      <!-- Map Section -->
+      <section id="peta" class="mb-16">
+        <h2 class="text-3xl font-bold mb-6 text-center text-gray-800">
+          Peta Distribusi SPBU & Pertashop
+        </h2>
+
+        <div class="bg-white rounded-xl shadow-lg">
+          <!-- Map dipindah ke sini -->
+          <div id="map" class="w-full h-[600px] relative">
+            <div id="popup" class="ol-popup">
+              <a href="#" id="popup-closer" class="ol-popup-closer"></a>
+              <div id="popup-content"></div>
+            </div>
+
+            <!-- tombol aktifkan zoom -->
+            <div
+              class="absolute top-4 left-1/2 transform -translate-x-1/2 z-50 flex space-x-2"
+            >
+              <button
+                id="enableZoom"
+                class="bg-blue-600 text-white px-4 py-2 rounded shadow hover:bg-blue-700"
+              >
+                Aktifkan Zoom
+              </button>
+              <button
+                id="disableZoom"
+                class="bg-gray-600 text-white px-4 py-2 rounded shadow hover:bg-gray-700 hidden"
+              >
+                Nonaktifkan Zoom
+              </button>
+              <button
+                id="hitungJarak"
+                class="bg-green-600 text-white px-4 py-2 rounded shadow hover:bg-green-700"
+              >
+                Hitung Jarak
+              </button>
+            </div>
+            <!-- Tombol hitung jarak -->
+          </div>
+        </div>
+      </section>
+
+      <!-- Distance Section -->
+      <section id="jarak" class="mb-16">
+        <h2 class="text-3xl font-bold mb-8 text-center text-gray-800">
+          Jarak Antar Lokasi
+        </h2>
+
+        <div class="bg-white rounded-xl shadow-md p-6 overflow-x-auto">
+          <!-- input pencarian -->
+          <div class="flex justify-end mb-4">
+            <input
+              type="text"
+              id="searchInput"
+              placeholder="Cari lokasi..."
+              class="border px-4 py-2 rounded w-64 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+          <table class="min-w-full table-auto text-left text-gray-700">
+            <thead class="bg-blue-100">
+              <tr>
+                <th class="px-4 py-2">Dari</th>
+                <th class="px-4 py-2">Ke</th>
+                <th class="px-4 py-2">Jarak (km)</th>
+              </tr>
+            </thead>
+            <tbody id="tabel-jarak">
+              <tr class="border-b">
+                <td class="px-4 py-2">SPBU A</td>
+                <td class="px-4 py-2">Pertashop B</td>
+                <td class="px-4 py-2">3.2</td>
+              </tr>
+              <tr class="border-b">
+                <td class="px-4 py-2">SPBU C</td>
+                <td class="px-4 py-2">SPBU D</td>
+                <td class="px-4 py-2">5.1</td>
+              </tr>
+              <!-- Tambahkan baris lain sesuai data -->
+            </tbody>
+          </table>
+
+          <!-- Pagination Controls -->
+          <div
+            class="flex justify-center items-center space-x-2 mt-4"
+            id="pagination-controls"
+          >
+            <button
+              id="prevPage"
+              class="px-4 py-2 bg-blue-400 rounded hover:bg-gray-400 transition text-white"
+            >
+              &lt;&lt;
+            </button>
+            <span id="pageInfo" class="text-sm text-gray-700">Halaman 1</span>
+            <button
+              id="nextPage"
+              class="px-4 py-2 bg-blue-400 rounded hover:bg-gray-400 transition text-white"
+            >
+              &gt;&gt;
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Statistics Section -->
+      <section id="statistik" class="mb-16">
+        <h2 class="text-3xl font-bold mb-8 text-center text-gray-800">
+          Statistik Distribusi
+        </h2>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6 mb-8">
+          <!-- Stat Card 1 -->
+          <div
+            class="bg-white rounded-xl shadow-md p-6 text-center hover:shadow-lg transition"
+          >
+            <div class="text-blue-600 mb-3">
+              <i class="fas fa-gas-pump text-4xl"></i>
+            </div>
+            <h3 class="text-xl font-semibold mb-2">Total SPBU</h3>
+            <p class="text-3xl font-bold text-gray-800">8</p>
+          </div>
+
+          <!-- Stat Card 3 -->
+          <div
+            class="bg-white rounded-xl shadow-md p-6 text-center hover:shadow-lg transition"
+          >
+            <div class="text-yellow-600 mb-3">
+              <i class="fas fa-store text-4xl"></i>
+            </div>
+            <h3 class="text-xl font-semibold mb-2">Total Pertashop</h3>
+            <p class="text-3xl font-bold text-gray-800">6</p>
+          </div>
+        </div>
+
+        <!-- Charts -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <div class="bg-white rounded-xl shadow-md p-6">
+            <h3 class="text-xl font-semibold mb-4 text-gray-800">
+              Distribusi Per Kecamatan
+            </h3>
+            <div class="chart-container">
+              <canvas id="districtChart"></canvas>
+            </div>
+          </div>
+
+          <div class="bg-white rounded-xl shadow-md p-6">
+            <h3 class="text-xl font-semibold mb-4 text-gray-800">
+              Status Operasional
+            </h3>
+            <div class="chart-container">
+              <canvas id="statusChart"></canvas>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- About Section -->
+      <section id="tentang" class="mb-16">
+        <div class="bg-white rounded-xl shadow-md overflow-hidden">
+          <div class="p-6 md:p-8">
+            <h2 class="text-3xl font-bold mb-6 text-gray-800">
+              Tentang Sistem Ini
+            </h2>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              <div>
+                <h3 class="text-xl font-semibold mb-3 text-gray-800">
+                  Latar Belakang
+                </h3>
+                <p class="text-gray-600 mb-4">
+                  Sistem Informasi Geografis ini dikembangkan untuk memetakan
+                  distribusi dan memantau status operasional SPBU (Stasiun
+                  Pengisian Bahan Bakar Umum) dan Pertashop (Pertamina Shop) di
+                  Kota Sorong, Papua Barat Daya.
+                </p>
+                <p class="text-gray-600">
+                  Dengan sistem ini, pemerintah daerah dan pihak terkait dapat
+                  melakukan perencanaan yang lebih baik dalam penyediaan bahan
+                  bakar minyak untuk masyarakat.
+                </p>
+              </div>
+
+              <div>
+                <h3 class="text-xl font-semibold mb-3 text-gray-800">
+                  Fitur Utama
+                </h3>
+                <ul class="space-y-3 text-gray-600">
+                  <li class="flex items-start">
+                    <i class="fas fa-check-circle text-green-500 mt-1 mr-2"></i>
+                    <span>Visualisasi geografis lokasi SPBU dan Pertashop</span>
+                  </li>
+                  <li class="flex items-start">
+                    <i class="fas fa-check-circle text-green-500 mt-1 mr-2"></i>
+                    <span>Informasi status operasional setiap fasilitas</span>
+                  </li>
+                  <li class="flex items-start">
+                    <i class="fas fa-check-circle text-green-500 mt-1 mr-2"></i>
+                    <span>Analisis distribusi per kecamatan</span>
+                  </li>
+                  <li class="flex items-start">
+                    <i class="fas fa-check-circle text-green-500 mt-1 mr-2"></i>
+                    <span>Integrasi dengan peta dari QGIS</span>
+                  </li>
+                  <li class="flex items-start">
+                    <i class="fas fa-check-circle text-green-500 mt-1 mr-2"></i>
+                    <span>Tabel jarak antar lokasi</span>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white py-8">
+      <div class="container mx-auto px-4">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div>
+            <h3 class="text-xl font-semibold mb-4">SIG SPBU & Pertashop</h3>
+            <p class="text-gray-400">
+              Sistem Informasi Geografis untuk pemetaan distribusi dan status
+              operasional SPBU dan Pertashop di Kota Sorong.
+            </p>
+          </div>
+
+          <div>
+            <h3 class="text-xl font-semibold mb-4">Tautan Cepat</h3>
+            <ul class="space-y-2">
+              <li>
+                <a
+                  href="#peta"
+                  class="text-gray-400 hover:text-white transition"
+                  >Peta Distribusi</a
+                >
+              </li>
+              <li>
+                <a
+                  href="#statistik"
+                  class="text-gray-400 hover:text-white transition"
+                  >Statistik</a
+                >
+              </li>
+              <li>
+                <a
+                  href="#tentang"
+                  class="text-gray-400 hover:text-white transition"
+                  >Tentang</a
+                >
+              </li>
+            </ul>
+          </div>
+
+          <div>
+            <h3 class="text-xl font-semibold mb-4">Sosial Media</h3>
+            <div class="flex space-x-4">
+              <a
+                href="#"
+                class="text-gray-400 hover:text-white transition text-2xl"
+                ><i class="fab fa-facebook"></i
+              ></a>
+              <a
+                href="#"
+                class="text-gray-400 hover:text-white transition text-2xl"
+                ><i class="fab fa-twitter"></i
+              ></a>
+              <a
+                href="#"
+                class="text-gray-400 hover:text-white transition text-2xl"
+                ><i class="fab fa-instagram"></i
+              ></a>
+              <a
+                href="#"
+                class="text-gray-400 hover:text-white transition text-2xl"
+                ><i class="fab fa-youtube"></i
+              ></a>
+            </div>
+          </div>
+        </div>
+
+        <div
+          class="border-t border-gray-700 mt-8 pt-6 text-center text-gray-400"
+        >
+          <p>&copy; 2023 Dinas ESDM Kota Sorong. Semua hak dilindungi.</p>
+        </div>
+      </div>
+    </footer>
+
+    <script src="resources/qgis2web_expressions.js"></script>
+    <script src="./resources/functions.js"></script>
+    <script src="./resources/ol.js"></script>
+    <script src="./resources/ol-layerswitcher.js"></script>
+    <script src="layers/ADMINISTRASIKECAMATAN_AR_50K_3.js"></script>
+    <script src="layers/DataLokasiSPBUPertashop_4.js"></script>
+    <script src="styles/ADMINISTRASIKECAMATAN_AR_50K_3_style.js"></script>
+    <script src="styles/DataLokasiSPBUPertashop_4_style.js"></script>
+    <script src="./layers/layers.js" type="text/javascript"></script>
+    <script src="./resources/Autolinker.min.js"></script>
+    <script src="./resources/qgis2web.js"></script>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script src="./js/statistic.js"></script>
+    <script src="./js/script.js"></script>
+  </body>
+</html>
