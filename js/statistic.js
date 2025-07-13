@@ -50,7 +50,7 @@ const statusChart = new Chart(statusCtx, {
     ],
     datasets: [
       {
-        data: [7, 1, 3, 3],
+        data: [6, 2, 4, 3],
         backgroundColor: [
           "rgba(75, 192, 192, 0.7)",
           "rgba(255, 99, 132, 0.7)",
